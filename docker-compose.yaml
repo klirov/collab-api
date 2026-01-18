@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: collab-postgres
+    environment:
+      POSTGRES_DB: collab
+      POSTGRES_USER: collab
+      POSTGRES_PASSWORD: collab
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7
+    container_name: collab-redis
+    ports:
+      - '6379:6379'

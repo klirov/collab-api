@@ -1,0 +1,20 @@
+import 'dotenv/config';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+    const port = 3000;
+
+    const app = await NestFactory.create(AppModule);
+
+    app.setGlobalPrefix('api');
+
+    app.enableShutdownHooks();
+
+    await app.listen(port);
+
+    console.log(`Server started on port ${port}`);
+}
+bootstrap().catch((err) => {
+    console.error('Ошибка при запуске приложения:', err);
+});

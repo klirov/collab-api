@@ -1,0 +1,15 @@
+{
+    "singleQuote": true,
+    "trailingComma": "all",
+    "endOfLine": "lf",
+    "semi": true,
+    "tabWidth": 4,
+    "overrides": [
+        {
+            "files": ["*.yml", "*.yaml", "docker-compose.*"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}

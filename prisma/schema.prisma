@@ -1,0 +1,131 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        String   @id @default(uuid())
+    email     String   @unique
+    password  String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    sessions Session[]
+    members  WorkspaceMember[]
+}
+
+model Session {
+    id           String   @id @default(uuid())
+    userId       String
+    refreshToken String   @unique
+    userAgent    String?
+    ipAddress    String?
+    createdAt    DateTime @default(now())
+    expiresAt    DateTime
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Workspace {
+    id        String            @id @default(uuid())
+    name      String
+    createdAt DateTime          @default(now())
+    deletedAt DateTime?
+    members   WorkspaceMember[]
+
+    resources Resource[]
+    auditLogs AuditLog[]
+}
+
+model WorkspaceMember {
+    id          String        @id @default(uuid())
+    userId      String
+    workspaceId String
+    role        WorkspaceRole
+    status      MemberStatus
+    createdAt   DateTime      @default(now())
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+    permissions Permission[]
+
+    @@unique([userId, workspaceId])
+}
+
+model Resource {
+    id          String    @id @default(uuid())
+    workspaceId String
+    createdById String
+    version     Int       @default(1)
+    deletedAt   DateTime?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+    versions ResourceVersion[]
+
+    permissions Permission[]
+}
+
+model ResourceVersion {
+    id          String   @id @default(uuid())
+    resourceId  String
+    version     Int
+    data        Json
+    createdById String
+    createdAt   DateTime @default(now())
+
+    resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+}
+
+model Permission {
+    id         String          @id @default(uuid())
+    memberId   String
+    resourceId String
+    level      PermissionLevel
+    createdAt  DateTime        @default(now())
+
+    member WorkspaceMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+    resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+    @@unique([memberId, resourceId])
+}
+
+model AuditLog {
+    id          String  @id @default(uuid())
+    workspaceId String
+    userId      String
+    action      String
+    entity      String
+    entityId    String?
+    metadata    Json?
+
+    createdAt DateTime @default(now())
+
+    workspace Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+enum WorkspaceRole {
+    OWNER
+    MEMBER
+}
+
+enum MemberStatus {
+    ACTIVE
+    INVITED
+    REMOVED
+}
+
+enum PermissionLevel {
+    VIEWER
+    EDITOR
+    OWNER
+}
